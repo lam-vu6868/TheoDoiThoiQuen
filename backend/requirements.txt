@@ -1,0 +1,30 @@
+# ============================================
+# DANH SÁCH THƯ VIỆN PYTHON DÙNG TRONG PROJECT
+# ============================================
+
+# --- WEB FRAMEWORK ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# --- DATABASE ---
+sqlalchemy==2.0.45
+psycopg2-binary==2.9.11
+alembic==1.14.0
+
+# --- AUTHENTICATION & SECURITY ---
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]>=1.7.4
+
+# --- ENVIRONMENT VARIABLES ---
+python-dotenv==1.0.1
+
+# --- VALIDATION (đi kèm FastAPI nhưng liệt kê để rõ ràng) ---
+pydantic==2.10.5
+pydantic-settings==2.7.0
+
+# ============================================
+# CÁCH CÀI ĐẶT:
+# pip install -r requirements.txt
+# ============================================
+
+
