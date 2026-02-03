@@ -168,3 +168,4 @@ class MotivationQuote(Base):
     quote = Column(String, nullable=False)  # "Success is not final..."
     author = Column(String, nullable=True)  # "Winston Churchill"
  
+helo
