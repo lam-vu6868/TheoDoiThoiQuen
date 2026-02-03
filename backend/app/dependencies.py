@@ -51,7 +51,7 @@ def get_current_user(
         )
     
     # Import User model (import ở đây để tránh circular import)
-    from app.models.user import User
+    from backend.app.models.model import User
     
     # Lấy user từ database
     user = db.query(User).filter(User.id == user_id).first()
