@@ -92,3 +92,6 @@ def validate_email_format(email: str) -> bool:
     Dùng regex để kiểm tra format cơ bản của email.
     """
     pass
+
+def check_password(pw_plain: str, pw_hashed: str ) -> str: 
+    pass
