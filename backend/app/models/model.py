@@ -44,7 +44,10 @@ class User(Base):
 class UserSession(Base):
     """
     Bảng theo dõi sessions đăng nhập.
-    Dùng để giới hạn số device, force logout, theo dõi hoạt động.
+    Dùng để giới hạn số đăng nhập không cho đăng nhập 2 nơi 1 lúc
+    hoặc khi đăng nhập nới này
+    thì đăng xuất bên kia 
+    , force logout, theo dõi hoạt động.
     """
     __tablename__ = "user_sessions"
     
