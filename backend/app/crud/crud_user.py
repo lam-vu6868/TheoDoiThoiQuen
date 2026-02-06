@@ -27,20 +27,11 @@ from app.core.security import verify_password, get_password_hash
 # verify_password(plain_password: str, hashed_password: str) -> bool: Kiểm tra password có đúng không
 
 
-# ========================================
-# CODE CÁC FUNCTIONS Ở ĐÂY (ASYNC VERSION)
-# ========================================
-# Các functions cần tạo (tất cả đều async):
-# - get_user_by_email(db, email) -> Optional[User]
-# - get_user_by_username(db, username) -> Optional[User]
-# - get_user_by_id(db, user_id) -> Optional[User]
-# - get_users(db, skip, limit) -> List[User]
-# - create_user(db, username, email, password, full_name, role) -> User
-# - update_user(db, user_id, **kwargs) -> Optional[User]
-# - delete_user(db, user_id) -> bool
-# - authenticate_user(db, username_or_email, password) -> Optional[User]
 
 
+# |===================================
+# |     LẤY THEO USER THEO EMAIL        
+# |===================================
 async def get_user_by_email(db: AsyncSession, email:str) -> Optional[u]:
     """
     Tìm user theo email (ASYNC VERSION)
@@ -78,6 +69,8 @@ async def get_user_by_email(db: AsyncSession, email:str) -> Optional[u]:
     return user
 
 
+
+
 # |===================================
 # |     LẤY THEO TÊN ĐĂNG NHẬP        
 # |===================================
@@ -95,6 +88,8 @@ async def get_user_by_username(db: AsyncSession, userName:str)-> Optional[u]:
     return user
 
 
+
+
 # |===================================
 # |       LẤY THEO USER ID              
 # |===================================
@@ -107,6 +102,8 @@ async def get_user_by_id (db: AsyncSession , user_id:int) -> Optional[u]:
     user = result.scalar_one_or_none()
 
     return user
+
+
 
 
 # |===================================
@@ -123,6 +120,8 @@ async def get_user(db: AsyncSession , skip:int, limit:int) -> List[u]:
     users = result.scalars().all() 
 
     return users 
+
+
 
 
 # |===================================
@@ -168,6 +167,7 @@ async def create_user(db:AsyncSession, full_name:str, username:str, password:str
 
 
 
+
 # |===================================
 # |        CẬP NHẬT USER               
 # |===================================
@@ -210,6 +210,8 @@ async def update_user(db: AsyncSession, user_id: int, **kwargs) -> Optional[u]:
     return user
 
 
+
+
 # |===================================
 # |        XÓA USER               
 # |===================================
@@ -224,6 +226,8 @@ async def delete_user(db: AsyncSession, user_id: int)-> bool:
     await db.commit()
 
     return True
+
+
 
 
 # |===================================
