@@ -1,6 +1,13 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+# AsyncSession: Database session bất đồng bộ (thay Session sync)
+# Hỗ trợ await cho các operations: execute(), commit(), refresh()
+
+from sqlalchemy import select
+# select: Câu lệnh SELECT của SQLAlchemy 2.0
+# Thay thế db.query() cũ (SQLAlchemy 1.x)
+
 from app.core.database import get_db
 from app.core.security import decode_access_token
 
@@ -9,21 +16,21 @@ from app.core.security import decode_access_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
-def get_current_user(
+async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
-    Dependency để lấy thông tin user hiện tại từ JWT token
+    Dependency để lấy thông tin user hiện tại từ JWT token (ASYNC VERSION)
     
     Cách dùng trong router:
         @app.get("/profile")
-        def get_profile(current_user = Depends(get_current_user)):
+        async def get_profile(current_user = Depends(get_current_user)):
             return {"user": current_user}
     
     Args:
         token: JWT token từ header Authorization
-        db: Database session
+        db: AsyncSession - Database session bất đồng bộ
         
     Returns:
         User object từ database
@@ -31,7 +38,7 @@ def get_current_user(
     Raises:
         HTTPException 401: Nếu token không hợp lệ hoặc user không tồn tại
     """
-    # Giải mã token để lấy user_id
+    # Bước 1: Giải mã token để lấy user_id
     payload = decode_access_token(token)
     
     if payload is None:
@@ -50,11 +57,15 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Import User model (import ở đây để tránh circular import)
-    from backend.app.models.model import User
+    # Bước 2: Import User model (import ở đây để tránh circular import)
+    from app.models.model import User
     
-    # Lấy user từ database
-    user = db.query(User).filter(User.id == user_id).first()
+    # Bước 3: Lấy user từ database (ASYNC)
+    # CŨ (SQLAlchemy 1.x): user = db.query(User).filter(User.id == user_id).first()
+    # MỚI (SQLAlchemy 2.0):
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)  # ← Phải có await
+    user = result.scalar_one_or_none()
     
     if user is None:
         raise HTTPException(
