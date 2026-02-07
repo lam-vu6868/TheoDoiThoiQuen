@@ -1,8 +1,17 @@
 from fastapi import FastAPI
+from app.routers import auth  # Import router auth
 
-app = FastAPI()
+app = FastAPI(
+    title="API Theo Dõi Thói Quen",
+    description="API quản lý thói quen người dùng",
+    version="1.0.0"
+)
 
-@app.get("/")
+# Đăng ký các routers
+app.include_router(auth.router)  # Đăng ký router auth (/auth/register, /auth/login...)
+
+
+@app.get("/", tags=["Health Check"])
 async def Home():
     """
     Health check endpoint (ASYNC VERSION)

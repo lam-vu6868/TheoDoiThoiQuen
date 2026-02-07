@@ -22,7 +22,7 @@ from app.models.model import User as u
 # User: Model đại diện cho bảng users trong database
 # Chứa các field: id, username, email, hashed_password, full_name, role, created_at
 
-from app.core.security import verify_password, get_password_hash
+from app.core.security import verify_password
 # get_password_hash(password: str) -> str: Hash password bằng bcrypt trước khi lưu vào DB
 # verify_password(plain_password: str, hashed_password: str) -> bool: Kiểm tra password có đúng không
 
