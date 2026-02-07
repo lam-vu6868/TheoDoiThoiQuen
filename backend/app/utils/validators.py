@@ -4,27 +4,108 @@ Validators - Các hàm validate dữ liệu custom.
 Dùng để kiểm tra tính hợp lệ của dữ liệu trước khi lưu vào database.
 """
 
+import re
 
-def validate_password_strength(password: str) -> tuple[bool, str]:
+
+def validate_username(username: str) -> str:
     """
-    Kiểm tra độ mạnh của mật khẩu.
+    Validate và chuẩn hóa username.
+    
+    Args:
+        username: Username cần validate
+        
+    Returns:
+        str: Username đã chuẩn hóa (stripped)
+        
+    Raises:
+        ValueError: Nếu username không hợp lệ
+        
+    Yêu cầu:
+        - Chỉ chứa chữ cái (a-z, A-Z), số (0-9), và gạch dưới (_)
+        - Tự động loại bỏ khoảng trắng đầu/cuối
+    """
+    # Loại bỏ whitespace đầu cuối
+    username = username.strip()
+    
+    # Check pattern: chỉ cho phép a-z, A-Z, 0-9, underscore
+    if not re.match(r'^[a-zA-Z0-9_]+$', username):
+        raise ValueError('Username chỉ chứa chữ cái, số và gạch dưới (_)')
+    
+    return username
+
+
+def validate_full_name(full_name: str) -> str:
+    """
+    Validate và chuẩn hóa họ tên.
+    
+    Args:
+        full_name: Họ tên cần validate
+        
+    Returns:
+        str: Họ tên đã chuẩn hóa
+        
+    Raises:
+        ValueError: Nếu họ tên không hợp lệ
+        
+    Xử lý:
+        - Loại bỏ khoảng trắng đầu/cuối
+        - Chuẩn hóa nhiều khoảng trắng liên tiếp thành 1
+        - Không cho phép tên rỗng
+    """
+    # Loại bỏ whitespace đầu cuối
+    full_name = full_name.strip()
+    
+    # Check không được rỗng
+    if not full_name:
+        raise ValueError('Họ tên không được để trống')
+    
+    # Loại bỏ nhiều khoảng trắng liên tiếp thành 1
+    full_name = re.sub(r'\s+', ' ', full_name)
+    
+    return full_name
+
+
+def validate_password_strength(password: str) -> str:
+    """
+    Validate độ mạnh của mật khẩu.
     
     Args:
         password: Mật khẩu cần kiểm tra
         
     Returns:
-        tuple: (is_valid, message)
-        - is_valid: True nếu mật khẩu hợp lệ
-        - message: Thông báo lỗi hoặc thành công
+        str: Password nếu hợp lệ
+        
+    Raises:
+        ValueError: Nếu password không đủ mạnh với thông báo cụ thể
         
     Yêu cầu:
-        - Ít nhất 8 ký tự
+        - Ít nhất 6 ký tự
         - Có ít nhất 1 chữ hoa
         - Có ít nhất 1 chữ thường
         - Có ít nhất 1 số
-        - (Optional) Có ít nhất 1 ký tự đặc biệt
+        - Có ít nhất 1 ký tự đặc biệt
     """
-    pass
+    # Validate độ dài tối thiểu
+    if len(password) < 6:
+        raise ValueError('Mật khẩu phải có ít nhất 6 ký tự')
+    
+    # Validate có chữ hoa
+    if not re.search(r'[A-Z]', password):
+        raise ValueError('Mật khẩu phải có ít nhất 1 chữ hoa')
+    
+    # Validate có chữ thường
+    if not re.search(r'[a-z]', password):
+        raise ValueError('Mật khẩu phải có ít nhất 1 chữ thường')
+    
+    # Validate có số
+    if not re.search(r'[0-9]', password):
+        raise ValueError('Mật khẩu phải có ít nhất 1 số')
+    
+    # Validate có ký tự đặc biệt
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        raise ValueError('Mật khẩu phải có ít nhất 1 ký tự đặc biệt (!@#$%^&*...)')
+    
+    return password
 
 
 def validate_frequency_array(frequency: list[int]) -> bool:

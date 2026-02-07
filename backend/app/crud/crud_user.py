@@ -70,7 +70,6 @@ async def get_user_by_email(db: AsyncSession, email:str) -> Optional[u]:
 
 
 
-
 # |===================================
 # |     LẤY THEO TÊN ĐĂNG NHẬP        
 # |===================================
@@ -89,7 +88,6 @@ async def get_user_by_username(db: AsyncSession, userName:str)-> Optional[u]:
 
 
 
-
 # |===================================
 # |       LẤY THEO USER ID              
 # |===================================
@@ -102,7 +100,6 @@ async def get_user_by_id (db: AsyncSession , user_id:int) -> Optional[u]:
     user = result.scalar_one_or_none()
 
     return user
-
 
 
 
@@ -120,7 +117,6 @@ async def get_user(db: AsyncSession , skip:int, limit:int) -> List[u]:
     users = result.scalars().all() 
 
     return users 
-
 
 
 
@@ -167,7 +163,6 @@ async def create_user(db:AsyncSession, full_name:str, username:str, password:str
 
 
 
-
 # |===================================
 # |        CẬP NHẬT USER               
 # |===================================
@@ -211,7 +206,6 @@ async def update_user(db: AsyncSession, user_id: int, **kwargs) -> Optional[u]:
 
 
 
-
 # |===================================
 # |        XÓA USER               
 # |===================================
@@ -226,7 +220,6 @@ async def delete_user(db: AsyncSession, user_id: int)-> bool:
     await db.commit()
 
     return True
-
 
 
 
