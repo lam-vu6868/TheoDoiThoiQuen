@@ -174,5 +174,3 @@ def validate_email_format(email: str) -> bool:
     """
     pass
 
-def check_password(pw_plain: str, pw_hashed: str ) -> str: 
-    pass

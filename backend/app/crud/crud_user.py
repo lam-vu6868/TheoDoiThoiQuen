@@ -18,7 +18,7 @@ from typing import Optional, List
 # List[Type]: Kiểu dữ liệu là danh sách các Type
 # Dùng để type hint cho functions (giúp IDE gợi ý code tốt hơn)
 
-from app.models.model import User as u 
+from app.models.model import User as u  
 # User: Model đại diện cho bảng users trong database
 # Chứa các field: id, username, email, hashed_password, full_name, role, created_at
 
@@ -73,9 +73,9 @@ async def get_user_by_email(db: AsyncSession, email:str) -> Optional[u]:
 # |===================================
 # |     LẤY THEO TÊN ĐĂNG NHẬP        
 # |===================================
-async def get_user_by_username(db: AsyncSession, userName:str)-> Optional[u]:
+async def get_user_by_username(db: AsyncSession, username: str)-> Optional[u]:
     # Chuẩn bị lệnh để thực thi 
-    stmt = select(u).where(u.username == userName)
+    stmt = select(u).where(u.username == username)
 
     # Thực thi lệnh 
     result = await db.execute(stmt)
@@ -266,7 +266,11 @@ async def authenticate_user(db: AsyncSession, username_or_email: str, password: 
     # Bước 5: Đúng cả username/email và password
     return user  # Trả về user object để dùng luôn 
     
-    
+
+
+# |===================================
+# |        HÀM LẤY PASSWORD HASH              
+# |===================================
 
 
 

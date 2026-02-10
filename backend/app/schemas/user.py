@@ -77,6 +77,7 @@ class UserCreate(BaseModel):
         examples=["Nguyễn Văn A"]
     )
 
+
     # ===== VALIDATOR 1: Validate username =====
     # Gọi hàm validate_username từ utils/validators.py
     @field_validator('username')
@@ -112,3 +113,18 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserLogin(BaseModel):
+    username_or_email: str = Field(
+        description="Tên đăng nhập hoặc email",
+        examples=["john_doe", "john@example.com"]
+    )
+    password: str = Field(
+        min_length=6,
+        description="Mật khẩu"
+    )
+
+
+
+
+

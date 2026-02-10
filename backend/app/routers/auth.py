@@ -2,14 +2,14 @@
 from fastapi import HTTPException, Depends, APIRouter, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas.user import UserCreate, UserResponse 
+from app.schemas.user import UserCreate, UserResponse,UserLogin
 from app.crud.crud_user import (
     create_user,           # Tạo user mới trong DB
     get_user_by_email,     # Kiểm tra email đã tồn tại chưa
     get_user_by_username   # Kiểm tra username đã tồn tại chưa
 )
 from app.core.database import get_db
-from app.core.security import hash_password
+from app.core.security import hash_password,verify_password
 
 
 # ========================================
@@ -106,5 +106,47 @@ async def register(
     # FastAPI tự động serialize new_user thành UserResponse
     # Không trả về password (UserResponse không có field password)
     return new_user
+
+
+
+# ========================================
+# ENDPOINT: ĐĂNG NHẬP TÀI KHOẢN
+# ========================================
+@router.post(
+    "/login",
+    summary="Đăng nhập tài khoản",
+    description="Đăng nhập bằng username/email và password",
+    status_code=status.HTTP_200_OK
+)
+async def login(user: UserLogin ,db: AsyncSession = Depends(get_db)):
+
+   
+    # Kiểm tra có username không 
+    existing_name_email = await get_user_by_username(db=db , username=user.username_or_email)
+
+    # Nếu không có thì kiểm tra email 
+    if not existing_name_email:
+        existing_name_email = await get_user_by_email(db=db, email=user.username_or_email)
+
+    if not existing_name_email:
+         raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Tài khoản hoặc mật khẩu không chính xác"
+         )
+    
+    # Kiểm tra mật khẩu 
+    check_pw = verify_password(plain_password=user.password, hashed_password=existing_name_email.password)
+
+    if not check_pw:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Tài khoản hoặc mật khẩu không chính xác"
+        )
+    
+    # ============== đến kTra token trong db =========================
+    
+   
+
+
 
 
