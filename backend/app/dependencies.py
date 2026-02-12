@@ -48,6 +48,24 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    # ============================================================
+    # TODO 1: Lấy jti từ payload
+    # - jti = payload.get("jti")
+    # - Nếu jti là None → raise 401 "Token không hợp lệ"
+    # ============================================================
+    
+    # ============================================================
+    # TODO 2: Kiểm tra jti có trong bảng user_sessions không
+    # - Import hàm get_session_by_jti từ crud_session (cần tạo hàm này)
+    # - Gọi: session = await get_session_by_jti(db, jti)
+    # - Nếu session là None → raise 401 "Phiên đăng nhập đã hết hạn hoặc đã đăng nhập nơi khác"
+    # - Mục đích: nếu user đăng nhập nơi khác → jti cũ bị xóa → token cũ bị chặn
+    # ============================================================
+    
+    # TODO 3: Sửa lại dòng dưới - payload dùng "sub" chứ không phải "user_id"
+    # - Hiện tại: user_id = payload.get("user_id")  ← SAI, token lưu là "sub"
+    # - Sửa thành: user_id = payload.get("sub")
+    # - Rồi convert: user_id = int(user_id) vì sub lưu dạng string
     user_id: int = payload.get("user_id")
     
     if user_id is None:

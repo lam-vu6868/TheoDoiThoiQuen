@@ -8,8 +8,9 @@ from app.crud.crud_user import (
     get_user_by_email,     # Kiểm tra email đã tồn tại chưa
     get_user_by_username   # Kiểm tra username đã tồn tại chưa
 )
+from app.crud.crud_session import delete_session, get_session, create_session
 from app.core.database import get_db
-from app.core.security import hash_password,verify_password
+from app.core.security import hash_password, verify_password, create_access_token
 
 
 # ========================================
@@ -143,10 +144,58 @@ async def login(user: UserLogin ,db: AsyncSession = Depends(get_db)):
             detail="Tài khoản hoặc mật khẩu không chính xác"
         )
     
-    # ============== đến kTra token trong db =========================
+    # |=============================================
+    # | BƯỚC 3: KIỂM TRA & XÓA SESSION CŨ (SINGLE SESSION)
+    # |=============================================
+    # Kiểm tra người dùng này có session (token) trong db không
+    existing_session = await get_session(db, existing_name_email.id)
+
+    # Nếu có → xóa session cũ đi (user chỉ được đăng nhập 1 nơi)
+    if existing_session:
+        await delete_session(db, existing_name_email.id)
+
+    # |=============================================
+    # | BƯỚC 4: TẠO TOKEN MỚI + LƯU SESSION
+    # |=============================================
     
-   
+    # Gọi create_access_token để tạo JWT token
+    # - data={"sub": "1"}: payload chứa user_id ("sub" là subject - chuẩn JWT)
+    # - Trả về 3 giá trị:
+    #   + access_token: chuỗi JWT gửi cho client (VD: "eyJhbGciOiJIUzI1NiIs...")
+    #   + jti: JWT ID unique (VD: "a1b2c3d4-e5f6-...") → lưu vào DB để track
+    #   + expires_at: thời điểm hết hạn (VD: 2026-02-13 10:30:00)
+    access_token, jti, expires_at = create_access_token(
+        data={"sub": str(existing_name_email.id)}
+    )
+    
+    # Lưu session mới vào bảng user_sessions
+    # Mục đích: khi verify token sau này, kiểm tra jti có trong DB không
+    # Nếu jti không có (bị xóa do đăng nhập nơi khác) → token không hợp lệ 
+    await create_session(
+        db=db,
+        user_id=existing_name_email.id,  # User nào
+        jti=jti,                          # Token nào (đối chiếu khi verify)
+        expires_at=expires_at             # Hết hạn lúc nào
+    )
+    
+    # |=============================================
+    # | BƯỚC 5: TRẢ VỀ TOKEN CHO CLIENT
+    # |=============================================
+    # Client sẽ lưu access_token vào localStorage hoặc cookie
+    # Mỗi request sau này gửi kèm header: Authorization: Bearer <access_token>
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"  # Chuẩn OAuth2: cho client biết loại token
+    }
 
 
-
-
+# ========================================
+# TODO: ENDPOINT ĐĂNG XUẤT
+# ========================================
+# Cần tạo endpoint POST /auth/logout
+# Flow:
+#   1. Nhận token từ header Authorization (dùng Depends(oauth2_scheme) hoặc Depends(get_current_user))
+#   2. Decode token → lấy jti
+#   3. Xóa session có jti đó trong bảng user_sessions
+#   4. Trả về {"message": "Đăng xuất thành công"}
+# Lưu ý: import oauth2_scheme từ dependencies.py hoặc dùng get_current_user dependency
