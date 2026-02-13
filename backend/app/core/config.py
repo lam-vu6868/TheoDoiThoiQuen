@@ -14,6 +14,15 @@ class Settings(BaseSettings):
     
     # CORS
     FRONTEND_URL: str = "http://localhost:5500"
+    # --- Email / SMTP (for FastAPI-Mail) ---
+    MAIL_FROM: str | None = None
+    MAIL_FROM_NAME: str | None = None
+    MAIL_SERVER: str | None = None
+    MAIL_PORT: int | None = None
+    MAIL_USERNAME: str | None = None
+    MAIL_PASSWORD: str | None = None
+    MAIL_STARTTLS: bool = True
+    MAIL_SSL_TLS: bool = False
     
     # App Config (có giá trị mặc định, không bắt buộc trong .env)
     PROJECT_NAME: str = "Habit Tracker API"  # Hiển thị trong Swagger do cs

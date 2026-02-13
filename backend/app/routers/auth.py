@@ -12,6 +12,10 @@ from app.crud.crud_session import delete_session, get_session, create_session
 from app.core.database import get_db
 from app.core.security import hash_password, verify_password, create_access_token, decode_access_token
 from app.dependencies import get_current_user, oauth2_scheme
+from app.schemas.user import ForgotPasswordRequest, ResetPasswordRequest
+from app.crud.crud_user import get_user_by_email, update_user
+from app.utils.email import send_password_reset_email
+from datetime import timedelta
 
 
 # ========================================
@@ -190,6 +194,77 @@ async def login(user: UserLogin ,db: AsyncSession = Depends(get_db)):
     }
 
 
+
+@router.post(
+    "/forgot-password",
+    summary="Yêu cầu đặt lại mật khẩu",
+    status_code=status.HTTP_200_OK,
+)
+async def forgot_password(request: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Gửi email chứa link/ token để reset mật khẩu.
+    Quy trình:
+      - Nếu email tồn tại: tạo reset token (mục đích password_reset) và gửi mail
+      - Trả về 200 luôn để tránh lộ thông tin email tồn tại
+    """
+    user = await get_user_by_email(db, request.email)
+    if user:
+        # Tạo token có mục đích rõ ràng và thời gian ngắn
+        reset_token, jti, expires_at = create_access_token(
+            data={"sub": str(user.id), "purpose": "password_reset"},
+            expires_delta=timedelta(minutes=15),
+        )
+        # Gửi email (async)
+        try:
+            await send_password_reset_email(user.email, reset_token)
+        except Exception:
+            # Ghi log/ignore lỗi gửi mail nhưng không báo chi tiết cho client
+            pass
+
+    return {"message": "Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu"}
+
+
+
+@router.post(
+    "/reset-password",
+    summary="Đặt lại mật khẩu",
+    status_code=status.HTTP_200_OK,
+)
+async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Reset mật khẩu bằng token gửi qua email.
+    Flow:
+      - Decode token, kiểm tra purpose == 'password_reset'
+      - Lấy user_id từ sub
+      - Hash mật khẩu mới và cập nhật DB
+      - Xóa sessions cũ để logout tất cả thiết bị
+    """
+    payload = decode_access_token(request.token)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token không hợp lệ hoặc đã hết hạn")
+
+    purpose = payload.get("purpose")
+    if purpose != "password_reset":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token không hợp lệ")
+
+    sub = payload.get("sub")
+    if sub is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token không chứa user")
+
+    user_id = int(sub)
+
+    # Hash password và cập nhật
+    new_hashed = hash_password(request.new_password)
+    updated = await update_user(db, user_id, password=new_hashed)
+    if not updated:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User không tồn tại")
+
+    # Xóa session cũ (force logout)
+    await delete_session(db, user_id)
+
+    return {"message": "Đổi mật khẩu thành công"}
+
+
 # ========================================
 # ENDPOINT: ĐĂNG XUẤT TÀI KHOẢN
 # ========================================
@@ -199,6 +274,7 @@ async def login(user: UserLogin ,db: AsyncSession = Depends(get_db)):
     description="Vô hiệu hóa phiên làm việc bằng cách xóa jti trong database",
     status_code=status.HTTP_200_OK
 )
+
 async def logout(
     # Depends(get_current_user): tự động verify token + check jti trong DB
     # Nếu token hợp lệ → trả về User object
@@ -233,3 +309,23 @@ async def logout(
     # | BƯỚC 2: TRẢ VỀ THÔNG BÁO
     # |=============================================
     return {"message": "Đăng xuất thành công"}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

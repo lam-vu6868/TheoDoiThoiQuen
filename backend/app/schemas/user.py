@@ -125,6 +125,15 @@ class UserLogin(BaseModel):
     )
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr = Field(description="Email đã đăng ký")
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(description="Token reset (từ email)")
+    new_password: str = Field(min_length=6, description="Mật khẩu mới")
+
+
 
 
 

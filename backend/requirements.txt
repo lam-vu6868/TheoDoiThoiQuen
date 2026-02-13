@@ -97,9 +97,12 @@ email-validator==2.1.0
 # - Normalize email về lowercase
 # Usage: from pydantic import EmailStr
 
+
+# Email sending (SMTP)
+fastapi-mail>=1.4.1
+
+
 # ============================================
 # CÁCH CÀI ĐẶT:
 # pip install -r requirements.txt
 # ============================================
-
-
