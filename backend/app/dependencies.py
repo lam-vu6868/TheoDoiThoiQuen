@@ -10,6 +10,7 @@ from sqlalchemy import select
 
 from app.core.database import get_db
 from app.core.security import decode_access_token
+from app.crud.crud_session import get_session_by_jti
 
 # OAuth2PasswordBearer để lấy token từ header "Authorization: Bearer <token>"
 # tokenUrl: đường dẫn API login (Swagger dùng để hiển thị nút Authorize)
@@ -48,12 +49,21 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+
     # ============================================================
-    # TODO 1: Lấy jti từ payload
-    # - jti = payload.get("jti")
-    # - Nếu jti là None → raise 401 "Token không hợp lệ"
+    # BƯỚC 2: Lấy jti (JWT ID) từ payload token
+    # jti là "số seri" của token, dùng để check trong DB còn hợp lệ không
     # ============================================================
+    jti = payload.get("jti")
     
+    if jti is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token không hợp lệ",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+
     # ============================================================
     # TODO 2: Kiểm tra jti có trong bảng user_sessions không
     # - Import hàm get_session_by_jti từ crud_session (cần tạo hàm này)
@@ -61,13 +71,21 @@ async def get_current_user(
     # - Nếu session là None → raise 401 "Phiên đăng nhập đã hết hạn hoặc đã đăng nhập nơi khác"
     # - Mục đích: nếu user đăng nhập nơi khác → jti cũ bị xóa → token cũ bị chặn
     # ============================================================
-    
+    existing_jti = await get_session_by_jti(db, jti)
+
+    if not existing_jti:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Phiên đăng nhập đã hết hạn hoặc đã đăng nhập nơi khác"
+        ) 
+
     # TODO 3: Sửa lại dòng dưới - payload dùng "sub" chứ không phải "user_id"
     # - Hiện tại: user_id = payload.get("user_id")  ← SAI, token lưu là "sub"
     # - Sửa thành: user_id = payload.get("sub")
     # - Rồi convert: user_id = int(user_id) vì sub lưu dạng string
-    user_id: int = payload.get("user_id")
+    user_id: int = payload.get("sub")
     
+
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

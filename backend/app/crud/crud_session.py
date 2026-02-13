@@ -33,17 +33,17 @@ async def delete_session(db: AsyncSession, user_id: int) -> bool:
 # ============================================================
 # TODO: Thêm hàm get_session_by_jti
 # ============================================================
-# async def get_session_by_jti(db: AsyncSession, jti: str) -> Optional[us]:
-#     """
-#     Tìm session theo jti (JWT ID).
-#     Dùng trong dependencies.py để verify token còn hợp lệ không.
-#     
-#     Flow: decode token → lấy jti → gọi hàm này → có = OK, không = bị đá
-#     """
-#     stmt = select(us).where(us.jti == jti)
-#     result = await db.execute(stmt)
-#     return result.scalar_one_or_none()
-# ============================================================
+async def get_session_by_jti(db: AsyncSession, jti: str) -> Optional[us]:
+    """
+    Tìm session theo jti (JWT ID).
+    Dùng trong dependencies.py để verify token còn hợp lệ không.
+    
+    Flow: decode token → lấy jti → gọi hàm này → có = OK, không = bị đá
+    """
+    stmt = select(us).where(us.jti == jti)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
+
 
 
 # ==============================
