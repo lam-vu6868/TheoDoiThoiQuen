@@ -10,7 +10,8 @@ from app.crud.crud_user import (
 )
 from app.crud.crud_session import delete_session, get_session, create_session
 from app.core.database import get_db
-from app.core.security import hash_password, verify_password, create_access_token
+from app.core.security import hash_password, verify_password, create_access_token, decode_access_token
+from app.dependencies import get_current_user, oauth2_scheme
 
 
 # ========================================
@@ -190,12 +191,45 @@ async def login(user: UserLogin ,db: AsyncSession = Depends(get_db)):
 
 
 # ========================================
-# TODO: ENDPOINT ĐĂNG XUẤT
+# ENDPOINT: ĐĂNG XUẤT TÀI KHOẢN
 # ========================================
-# Cần tạo endpoint POST /auth/logout
-# Flow:
-#   1. Nhận token từ header Authorization (dùng Depends(oauth2_scheme) hoặc Depends(get_current_user))
-#   2. Decode token → lấy jti
-#   3. Xóa session có jti đó trong bảng user_sessions
-#   4. Trả về {"message": "Đăng xuất thành công"}
-# Lưu ý: import oauth2_scheme từ dependencies.py hoặc dùng get_current_user dependency
+@router.post(
+    "/logout", 
+    summary="Đăng xuất tài khoản",
+    description="Vô hiệu hóa phiên làm việc bằng cách xóa jti trong database",
+    status_code=status.HTTP_200_OK
+)
+async def logout(
+    # Depends(get_current_user): tự động verify token + check jti trong DB
+    # Nếu token hợp lệ → trả về User object
+    # Nếu không → tự raise 401 (không cần xử lý ở đây)
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Endpoint đăng xuất tài khoản
+    
+    **Flow xử lý:**
+    1. get_current_user verify token → đảm bảo user đang đăng nhập
+    2. Xóa session của user trong bảng user_sessions
+    3. Token cũ sẽ bị vô hiệu hóa (jti không còn trong DB)
+    
+    **Headers required:**
+    - Authorization: Bearer <access_token>
+    
+    **Returns:**
+    - {"message": "Đăng xuất thành công"}
+    """
+    
+    # |=============================================
+    # | BƯỚC 1: XÓA SESSION TRONG DB
+    # |=============================================
+    # current_user đã được verify bởi get_current_user dependency
+    # → chắc chắn user hợp lệ và đang có session active
+    # Xóa session → jti bị xóa khỏi DB → token cũ không dùng được nữa
+    await delete_session(db, current_user.id)
+    
+    # |=============================================
+    # | BƯỚC 2: TRẢ VỀ THÔNG BÁO
+    # |=============================================
+    return {"message": "Đăng xuất thành công"}
