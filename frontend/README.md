@@ -1,16 +1,32 @@
-# React + Vite
+## Phần nội dung Frontend của Ứng dụng theo dõi thói quen:
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+👤 Thành viên đảm nhiệm chính:
 
-Currently, two official plugins are available:
+- Nguyễn Tuấn Anh
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tổng quan quy trình - Roadmap code Frontend
 
-## React Compiler
+### Chặng 1: Setup Frontend
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- [ ] Khởi tạo dự án, tích hợp các thư viện đầy đủ, tích hợp Tailwind Css
+- [ ] Setup các biến UI (màu cho dark -light theme, các component cơ bản dễ tái sử dụng nhiều như btn, card, .....)
+- [ ] Setup cấu trúc thư mục, các file jsx rỗng khi truy cập các trang
 
-## Expanding the ESLint configuration
+### Chặng 2: Layout - Routes, Frontend Auth, Fetch API
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- [ ] Code file Layout cho client, admin và dùng routes để phân các trang cho client, trang cho admin.
+- [ ] Xây dựng AuthContext và AuthProvider để lưu trữ JWT, Protected Route để tránh xâm nhập ( user truy cập dashboard của Admin)
+- [ ] Xây dựng Axios fetch API tiện hơn so với fetch thuần
+- [ ] Xây dựng 1 Custom Hook Fetch API (Loading -- > Load Failed or Success)
+
+### Chặng 3: Login - Signup - Logout
+
+- [ ] Xây dựng Log in <fetch jwt từ LocalStoarge --> tạo AuthContext, Protected Route>
+- [ ] Xây dựng Sign up <Fetch Api>
+- [ ] Xây dựng Log out <Xóa DL trong AuthContext, xóa Jwt trên LocalStoarge>
+
+### Chặng 4: Code UI + Fetch API Data :3
+
+- [ ] Các Components cần tái sử dụng
+- [ ] Các page cho Admin
+- [ ] Các Page cho Client
